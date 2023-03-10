@@ -1,0 +1,115 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import random
+
+############################################################################
+#load the data
+
+#field_data = np.loadtxt('drive/MyDrive/VCNN_test/data/helin/phitwo1.txt')
+#field_data = np.loadtxt('drive/MyDrive/VCNN_test/data/helin/phitwo1_large.txt')
+field_data = np.loadtxt('drive/MyDrive/VCNN_test/data/helin/apower1_large.txt')
+
+field_data = field_data.reshape(9261,171,171)
+
+plt.imshow(field_data[8,:,:,])
+
+
+#############################################################################
+#construct voronoi
+random_range = 3 # the sampling range
+
+def stucture_obs(x_list,y_list):
+  x_coord = []
+  y_coord = []
+  for i in range(len(x_list)-1):
+    for j in range(len(y_list)-1):
+      #x_coord.append(random.randint(x_list[i],x_list[i+1]))
+      #y_coord.append(random.randint(y_list[j],y_list[j+1]))
+      try:
+        x_coord.append(random.randint(x_list[i],x_list[i]+random_range))
+        y_coord.append(random.randint(y_list[j],y_list[j]+random_range))
+      except:
+        pass
+  return x_coord,y_coord
+
+# the points to place (randomly) sensors
+x_list = [0,10,30,50,70,90,110,130,150,170]
+y_list = [0,10,30,50,70,90,110,130,150,170]
+
+x_coord,y_coord = stucture_obs(x_list,y_list)
+
+len(y_coord)
+
+
+####################################################
+#construct the voronoi tessllation
+Ni = 100
+N = 64
+Ni_portion = np.ones((Ni, 2))
+Ni_portion[:,1] = np.zeros(Ni)
+Pi = np.round((np.random.rand(Ni, 2))*(N-1))
+Xi, Yi = Pi[:,0], Pi[:,1]
+Zi = u_t[Xi.astype(int),64-1-Yi.astype(int)]
+
+x = np.linspace(0., N, N)
+y = np.linspace(0., N, N)[::-1]
+X, Y = np.meshgrid(x, y)
+P = np.array([X.flatten(), Y.flatten() ]).transpose()
+
+from scipy.interpolate import griddata
+Z_nearest = griddata(Pi, Zi, P, method = "nearest").reshape([N, N])
+plt.contourf(X, Y, Z_nearest, 50)
+plt.plot(Xi, Yi, "or", label = "Data")
+plt.colorbar()
+plt.legend()
+plt.grid()
+plt.show()
+
+
+###################################################
+#generate automatically a sequence of voronoi field for training
+
+N = 171
+count = 0
+
+x_coord,y_coord = stucture_obs(x_list,y_list)
+
+#vor_field_data = np.zeros((13310, 171, 171))
+#true_field_data = np.zeros((13310, 171, 171))
+
+vor_field_data = np.zeros((46305, 171, 171))
+true_field_data = np.zeros((46305, 171, 171))
+
+#for index in range(1331):
+for index in range(9261):
+  for repeat in range(1):
+
+    #x_coord,y_coord = stucture_obs(x_list,y_list)
+    Xi, Yi = np.array(x_coord),np.array(y_coord) 
+    u_t = field_data[index,:,:,]
+    Pi = np.array(x_coord+y_coord).reshape(len(x_coord),2)
+    Zi = u_t[Xi.astype(int),64-1-Yi.astype(int)]
+
+    x = np.linspace(0., N, N)
+    y = np.linspace(0., N, N)[::-1]
+    X, Y = np.meshgrid(x, y)
+    P = np.array([X.flatten(), Y.flatten() ]).transpose()
+
+    Z_nearest = griddata(Pi, Zi, P, method = "nearest").reshape([N, N])
+
+    vor_field_data[count,:,:] = Z_nearest
+    true_field_data[count,:,:] = u_t
+    count += 1
+
+true_field_data.shape
+
+plt.imshow(vor_field_data[600,:,:])
+
+#np.save('drive/MyDrive/VCNN_test/data/helin/vor_field_data_9261_fix.npy',vor_field_data)
+#np.save('drive/MyDrive/VCNN_test/data/helin/true_field_data_9261_fix.npy',true_field_data)
+np.save('drive/MyDrive/VCNN_test/data/helin/true_field_data_9261_fix_apower1_large.npy',true_field_data)
+
+plt.imshow(vor_field_data[92609,:,:])
+
+

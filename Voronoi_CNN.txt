@@ -1,0 +1,119 @@
+
+import tensorflow as tf
+tf.test.gpu_device_name()
+
+# -*- coding: utf-8 -*-
+import numpy as np
+import scipy
+import math
+import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import cm
+from matplotlib import animation as animation
+
+from PIL import Image
+import matplotlib as mpl
+import time
+
+from tensorflow.python.keras.layers import Input, Dense, Convolution2D, MaxPooling2D, UpSampling2D,Cropping2D, AveragePooling2D,Dense,Flatten,Reshape,Dropout
+from tensorflow.python.keras.models import Model,Sequential
+import tensorflow as tf
+
+import tensorflow as tf
+
+from tensorflow.python.keras.layers import LSTM,LeakyReLU,RepeatVector
+from tensorflow.python.keras.callbacks import EarlyStopping
+from tensorflow.python.keras.callbacks import ModelCheckpoint
+
+from tensorflow import keras
+import pickle
+import keras
+from keras.layers import LeakyReLU
+from keras import backend as K
+from keras import optimizers
+
+#####################################################################
+#set train and test index
+
+test_index = list(range(1,9261,10))
+train_index = list(set(range(1,9261)) - set(range(1,9261,10)))
+
+#vor_train = np.load('VCNN_test/data/vor_u_vect_100_large.npy')[train_index,:,:]
+#vor_test = np.load('VCNN_test/data/vor_u_vect_100_large.npy')[test_index,:,:]
+
+#true_train = np.load('VCNN_test/data/true_u_vect_100_large.npy')[train_index,:,:]
+#true_test = np.load('VCNN_test/data/true_u_vect_100_large.npy')[test_index,:,:]
+
+##########################################################################################################
+
+vor_train = np.load('drive/MyDrive/VCNN_test/data/helin/vor_field_data_9261_fix.npy')[train_index,:,:]
+vor_test = np.load('drive/MyDrive/VCNN_test/data/helin/vor_field_data_9261_fix.npy')[test_index,:,:]
+
+#true_train = np.load('drive/MyDrive/VCNN_test/data/helin/true_field_data_9261_fix.npy')[train_index,:,:]
+#true_test = np.load('drive/MyDrive/VCNN_test/data/helin/true_field_data_9261_fix.npy')[test_index,:,:]
+
+true_train = np.load('drive/MyDrive/VCNN_test/data/helin/true_field_data_9261_fix_apower1_large.npy')[train_index,:,:]
+true_test = np.load('drive/MyDrive/VCNN_test/data/helin/true_field_data_9261_fix_apower1_large.npy')[test_index,:,:]
+
+#############################################################################################################
+# set up the CNN model
+
+input_img = Input(shape=(171,171,1))
+x = Convolution2D(48, (8,8),activation='relu', padding='same')(input_img)
+x = Convolution2D(48, (8,8),activation='relu', padding='same')(x)
+x = Convolution2D(48, (8,8),activation='relu', padding='same')(x)
+x = Convolution2D(48, (8,8),activation='relu', padding='same')(x)
+x = Convolution2D(48, (8,8),activation='relu', padding='same')(x)
+x = Convolution2D(48, (8,8),activation='relu', padding='same')(x)
+x = Convolution2D(48, (8,8),activation='relu', padding='same')(x)
+x_final = Convolution2D(1, (8,8), padding='same')(x)
+model = Model(input_img, x_final)
+model.compile(optimizer='adam', loss='mse')
+
+model.summary()
+
+#################################################################################################
+#train the CNN model
+K.set_value(model.optimizer.learning_rate, 0.001)
+history = model.fit(vor_train, true_train,epochs=300,validation_split=0.1, batch_size=64,shuffle=True)
+
+model.save('drive/MyDrive/VCNN_test/model/nuclear_VCNN_9261_fix_apower1_large.h5')
+
+###############################################################################################
+#save and load the model
+
+model.save('drive/MyDrive/VCNN_test/model/nuclear_VCNN_9261_fixbis.h5')
+
+history = model.fit(vor_train, true_train,epochs=80,validation_split=0.1, batch_size=64,shuffle=True)
+
+model = keras.models.load_model('VCNN_test/model/nuclear_VCNN_9261_fix.h5')
+
+predict_test = model.predict(vor_test)
+predict_train = model.predict(vor_train)
+
+plt.imshow(predict_test[500,:,:,0])
+
+
+
+########################################################################
+#evaulate the error
+
+np.linalg.norm(true_test[900,:,:]-predict_test[900,:,:,0])/np.linalg.norm(true_test[900,:,:])
+
+np.linalg.norm(true_train[100,:,:]-predict_train[100,:,:,0])/np.linalg.norm(true_train[100,:,:])
+
+relative_error_test = []
+
+for i in range(true_test.shape[0]):
+  relative_error_test.append(np.linalg.norm(true_test[i,:,:]-predict_test[i,:,:,0])/np.linalg.norm(true_test[i,:,:]))
+
+relative_error_train = []
+
+for i in range(true_train.shape[0]):
+  relative_error_train.append(np.linalg.norm(true_train[i,:,:]-predict_train[i,:,:,0])/np.linalg.norm(true_train[i,:,:]))
+
+plt.plot(relative_error_test)
+
+plt.plot(relative_error_train)
+
