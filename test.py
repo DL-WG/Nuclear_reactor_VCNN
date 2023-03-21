@@ -59,5 +59,29 @@ predict_test = model.predict(vor_test)
 
 np.save('drive/MyDrive/VCNN_test/data/helin/test_results.npy',predict_test)
 
+relative_L2_test = []
+
+for i in range(true_test.shape[0]):
+  relative_L2_test.append(np.linalg.norm(true_test[i,:,:]-predict_test[i,:,:,0])/np.linalg.norm(true_test[i,:,:]))
+
+relative_Linfini_test = []
+
+for i in range(true_test.shape[0]):
+  relative_Linfini_test.append(np.max(np.abs((true_test[i,:,:]-predict_test[i,:,:,0])))/np.max(np.abs((true_test[i,:,:]))))
+
+print('average L2 error',np.mean(relative_L2_test))
+print('std L2 error',np.std(relative_L2_test))
+
+print('average Linfini error',np.mean(relative_Linfini_test))
+print('std Linfini error',np.std(relative_Linfini_test))
+
+plt.plot(relative_L2_test)
+plt.show()
+plt.close()
+plt.plot(relative_Linfini_test)
+plt.show()
+plt.close()
 plt.imshow(predict_test[1000,:,:])
+plt.show()
+plt.close()
 
