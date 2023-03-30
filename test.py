@@ -85,3 +85,17 @@ plt.imshow(predict_test[1000,:,:])
 plt.show()
 plt.close()
 
+
+ssim_list = []
+
+from skimage.metrics import structural_similarity
+
+for i in range(true_test.shape[0]):
+  ssim_score = structural_similarity(true_test[i,:,:], predict_test[i,:,:].reshape(171,171))
+  ssim_list.append(ssim_score)
+  
+plt.plot(ssim_list)
+
+print('average SSIM',np.mean(ssim_list))
+print('std SSIM',np.std(ssim_list))
+
