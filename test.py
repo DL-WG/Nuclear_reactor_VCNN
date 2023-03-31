@@ -99,3 +99,25 @@ plt.plot(ssim_list)
 print('average SSIM',np.mean(ssim_list))
 print('std SSIM',np.std(ssim_list))
 
+
+norm_list = []
+
+for i in range(true_test.shape[0]):
+  norm_list.append(np.linalg.norm(true_test[i,:,:]))
+
+np.mean(norm_list)
+index = [i for i,v in enumerate(norm_list) if v > 0.9*np.max(norm_list)]
+
+
+relative_error_large09 = []
+
+for i in index:
+  relative_error_large09.append(np.linalg.norm(true_test[i,:,:]-predict_test[i,:,:,0])/np.linalg.norm(true_test[i,:,:]))
+
+relative_Linfini_large09 = []
+
+for i in index:
+  relative_Linfini_large09.append(np.max(np.abs((true_test[i,:,:]-predict_test[i,:,:,0])))/np.max(np.abs((true_test[i,:,:]))))
+  
+plt.plot(relative_error_large09)
+plt.plot(relative_Linfini_large09)
