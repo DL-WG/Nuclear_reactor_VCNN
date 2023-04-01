@@ -121,3 +121,22 @@ for i in index:
   
 plt.plot(relative_error_large09)
 plt.plot(relative_Linfini_large09)
+
+#############################################################################################
+
+
+index = [i for i,v in enumerate(norm_list) if v > np.mean(norm_list)]
+
+
+relative_error_largemean = []
+
+for i in index:
+  relative_error_largemean.append(np.linalg.norm(true_test[i,:,:]-predict_test[i,:,:,0])/np.linalg.norm(true_test[i,:,:]))
+
+relative_Linfini_largemean = []
+
+for i in index:
+  relative_Linfini_largemean.append(np.max(np.abs((true_test[i,:,:]-predict_test[i,:,:,0])))/np.max(np.abs((true_test[i,:,:]))))
+  
+plt.plot(relative_error_largemean)
+plt.plot(relative_Linfini_largemean)
