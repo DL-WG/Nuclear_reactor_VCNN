@@ -140,3 +140,27 @@ for i in index:
   
 plt.plot(relative_error_largemean)
 plt.plot(relative_Linfini_largemean)
+
+#####################################################################################################
+#new average
+H_matrix = np.ones((171,171))
+
+for i in range(171):
+  for j in range(171):
+    if i<10 or i>161:
+      H_matrix[i,j] =  H_matrix[i,j]*0.5
+    if j<10 or j>161:
+      H_matrix[i,j] =  H_matrix[i,j]*0.5
+
+
+def new_average(field):
+  return np.sum(H_matrix*field)
+
+new_average_error = []
+
+for i in range(true_test.shape[0]):
+  new_average_error.append((new_average(predict_test[i,:,:,0])-new_average(true_test[i,:,:]))/new_average(true_test[i,:,:]))
+  
+plt.plot(new_average_error)
+
+print(np.mean(new_average_error))
