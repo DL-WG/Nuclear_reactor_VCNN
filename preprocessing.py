@@ -33,9 +33,6 @@ x_list = [0,10,30,50,70,90,110,130,150,170]
 y_list = [0,10,30,50,70,90,110,130,150,170]
 
 
-x_coord,y_coord = stucture_obs(x_list,y_list)
-
-
 Ni = 100
 N = 171
 count = 0
